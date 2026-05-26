@@ -1,0 +1,8 @@
+{
+  "name": "case-service-backend",
+  "description": "Example Laravel-style backend skeleton (copy into a real Laravel project)",
+  "require": {
+    "php": ">=8.0",
+    "laravel/framework": "^10.0"
+  }
+}

@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: Case Service API
+  version: "1.0"
+  description: API for creating and querying citizen cases (idempotent create with Idempotency-Key)
+
+servers:
+  - url: http://localhost:8888
+    description: Local development server
+
+paths:
+  /api/cases:
+    post:
+      summary: Create a new case (idempotent)
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+          required: false
+          description: Unique key to make the request idempotent (client-generated UUID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCaseRequest"
+      responses:
+        "202":
+          description: Accepted — case queued for processing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateCaseResponse"
+        "400":
+          description: Bad request
+
+  /api/cases/{tracking_id}:
+    get:
+      summary: Get case status and history
+      parameters:
+        - in: path
+          name: tracking_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Case status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseStatusResponse"
+        "404":
+          description: Not found
+
+components:
+  schemas:
+    Contact:
+      type: object
+      properties:
+        email:
+          type: string
+        phone:
+          type: string
+
+    CreateCaseRequest:
+      type: object
+      required: [applicant, subject]
+      properties:
+        applicant:
+          type: object
+          properties:
+            name:
+              type: string
+            national_id:
+              type: string
+        subject:
+          type: string
+        description:
+          type: string
+        contact:
+          $ref: "#/components/schemas/Contact"
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              filename:
+                type: string
+              mime_type:
+                type: string
+
+    CreateCaseResponse:
+      type: object
+      properties:
+        tracking_id:
+          type: string
+        estimated_processing:
+          type: string
+
+    CaseEvent:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date-time
+        actor:
+          type: string
+        status:
+          type: string
+        note:
+          type: string
+
+    CaseStatusResponse:
+      type: object
+      properties:
+        tracking_id:
+          type: string
+        status:
+          type: string
+        last_updated:
+          type: string
+          format: date-time
+        progress:
+          type: array
+          items:
+            $ref: "#/components/schemas/CaseEvent"
+        expected_steps:
+          type: array
+          items:
+            type: string
