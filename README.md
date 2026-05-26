@@ -214,4 +214,3 @@
 - Error handling:
   - retry / fallback / DLQ / monitoring
 
-בהצלחה, ואם תרצה אפשר לגבש תשובה קונקרטית באותו פורמט עבור מצגת או דו"ח.
