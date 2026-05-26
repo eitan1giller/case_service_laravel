@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CitizenCase;
 use App\Models\OutboxEvent;
 use App\Models\Idempotency;
+use App\Services\ExternalValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -35,7 +36,18 @@ class CaseController extends Controller
             }
         }
 
-        $result = DB::transaction(function () use ($data, $idempotencyKey) {
+        // perform external validation before creating the case
+        $validator = new ExternalValidator();
+        $validation = $validator->validateApplicant($data['applicant'] ?? []);
+
+        if (isset($validation['valid']) && $validation['valid'] === false) {
+            return response()->json([
+                'error' => 'external_validation_failed',
+                'details' => $validation['errors'] ?? [],
+            ], 422);
+        }
+
+        $result = DB::transaction(function () use ($data, $idempotencyKey, $validation) {
             $case = CitizenCase::create([
                 'applicant_name' => $data['applicant']['name'],
                 'applicant_national_id' => $data['applicant']['national_id'] ?? null,
@@ -44,9 +56,33 @@ class CaseController extends Controller
                 'subject' => $data['subject'],
                 'description' => $data['description'] ?? null,
                 'status' => 'NEW',
+                'metadata' => [
+                    'external_validation' => $validation,
+                ],
             ]);
 
-            // write outbox event in same transaction
+            // prepare notifications (email + sms) when contact info available
+            $notifications = [];
+            if (!empty($case->contact_email)) {
+                $notifications[] = [
+                    'channel' => 'email',
+                    'to' => $case->contact_email,
+                    'subject' => 'קיבלנו את פנייתך — מעקב ' . $case->id,
+                    'body' => "תודה {$case->applicant_name},\n\nקיבלנו את פנייתך בנושא: {$case->subject}. מספר מעקב: {$case->id}.",
+                    'case' => $case->toArray(),
+                ];
+            }
+
+            if (!empty($case->contact_phone)) {
+                $notifications[] = [
+                    'channel' => 'sms',
+                    'to' => $case->contact_phone,
+                    'body' => "קיבלנו את פנייתך. מספר מעקב: {$case->id}.",
+                    'case' => $case->toArray(),
+                ];
+            }
+
+            // write outbox event in same transaction (includes notifications array)
             OutboxEvent::create([
                 'aggregate_type' => 'CitizenCase',
                 'aggregate_id' => $case->id,
@@ -55,6 +91,7 @@ class CaseController extends Controller
                     'tracking_id' => $case->id,
                     'applicant_name' => $case->applicant_name,
                     'subject' => $case->subject,
+                    'notifications' => $notifications,
                 ],
             ]);
 

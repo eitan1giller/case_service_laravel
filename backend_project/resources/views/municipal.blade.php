@@ -41,9 +41,9 @@
             <p class="muted">שלחו פניה מהירה לעירייה — תחזוקה, תברואה, תאורה ועוד. קבלו מספר מעקב והתקדמות בזמן אמת.</p>
 
             <div class="links">
-              <a class="btn" href="/cases/new">יצירת פניה</a>
+              {{-- <a class="btn" href="/cases/new">יצירת פניה</a> --}}
               <a class="btn" href="/admin/login" style="background:#0b5e3a">כניסת מנהל</a>
-              <a class="btn" href="/admin/cases" style="background:#6b7280">ממשק ניהול</a>
+              {{-- <a class="btn" href="/admin/cases" style="background:#6b7280">ממשק ניהול</a> --}}
             </div>
           </div>
         </div>

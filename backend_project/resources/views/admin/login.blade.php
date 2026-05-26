@@ -9,7 +9,7 @@
       .top{background:#004a7c;color:white;padding:20px}
       .container{max-width:600px;margin:32px auto;background:white;padding:24px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
       label{display:block;margin-top:12px}
-      input{width:100%;padding:10px;margin-top:6px}
+      input{width:95%;padding:10px;margin-top:6px}
       button{background:#0078d4;color:white;border:none;padding:10px 14px;border-radius:4px;margin-top:14px}
       .error{color:#a00;margin-top:8px}
       a{color:#0078d4}
