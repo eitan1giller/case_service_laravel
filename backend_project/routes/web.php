@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('municipal');
 });
 
 Route::get('/cases/new', function () {
@@ -53,5 +53,16 @@ Route::middleware(['admin.auth'])->group(function () {
 
     Route::get('/admin/cases/{case}', function (CitizenCase $case) {
         return view('admin.cases.show', compact('case'));
+    });
+
+    Route::post('/admin/cases/{case}/status', function (Request $request, CitizenCase $case) {
+        $request->validate([
+            'status' => ['required', 'string'],
+        ]);
+
+        $case->status = $request->input('status');
+        $case->save();
+
+        return redirect("/admin/cases/{$case->id}")->with('success', 'סטטוס התעדכן בהצלחה');
     });
 });

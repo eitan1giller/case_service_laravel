@@ -77,17 +77,28 @@
         const idempotency = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
 
         try{
-          const resp = await fetch('/api/cases', {
+              const resp = await fetch('/api/cases', {
             method: 'POST',
             headers: {'Content-Type':'application/json','Idempotency-Key': idempotency},
             body
           });
           const json = await resp.json();
           result.style.display = 'block';
-          result.textContent = JSON.stringify({status:resp.status, body: json}, null, 2);
+          if (resp.ok) {
+            result.style.borderColor = '#15803d';
+            result.style.background = '#ecfdf5';
+            result.textContent = 'תודה! הפניה נשלחה בהצלחה. מספר מעקב: ' + (json.tracking_id ?? json.id ?? 'לא זמין');
+            form.reset();
+          } else {
+            result.style.borderColor = '#b91c1c';
+            result.style.background = '#fee2e2';
+            result.textContent = 'שגיאה בשליחת הפניה: ' + (json.message || JSON.stringify(json));
+          }
         } catch(err){
           result.style.display = 'block';
-          result.textContent = 'Error: '+err.message;
+          result.style.borderColor = '#b91c1c';
+          result.style.background = '#fee2e2';
+          result.textContent = 'שגיאה: '+err.message;
         }
       });
     </script>

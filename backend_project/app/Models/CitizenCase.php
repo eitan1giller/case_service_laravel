@@ -20,4 +20,8 @@ class CitizenCase extends Model
         'metadata',
         'idempotency_key',
     ];
+
+    protected $casts = [
+        'metadata' => 'array',
+    ];
 }

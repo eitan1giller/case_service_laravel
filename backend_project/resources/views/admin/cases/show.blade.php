@@ -24,7 +24,26 @@
           </div>
         </div>
 
-        <label>שם מבקש: <strong>{{ $case->applicant_name }}</strong></label>
+        @if(session('success'))
+          <div style="margin-top:16px;padding:12px;background:#d1fae5;color:#065f46;border:1px solid #10b981;border-radius:6px">
+            {{ session('success') }}
+          </div>
+        @endif
+
+        <form method="post" action="/admin/cases/{{ $case->id }}/status" style="margin-top:16px;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
+          @csrf
+          <label style="display:block;margin-bottom:12px">
+            עדכון סטטוס:
+            <select name="status" style="width:100%;padding:10px;margin-top:6px">
+              @foreach(['NEW' => 'חדש', 'IN_PROGRESS' => 'בטיפול', 'RESOLVED' => 'טופל', 'CLOSED' => 'סגור'] as $value => $label)
+                <option value="{{ $value }}" @if($case->status === $value) selected @endif>{{ $label }}</option>
+              @endforeach
+            </select>
+          </label>
+          <button type="submit" style="background:#0078d4;color:white;padding:10px 14px;border:none;border-radius:4px">עדכן סטטוס</button>
+        </form>
+
+        <label style="margin-top:16px;display:block">שם מבקש: <strong>{{ $case->applicant_name }}</strong></label>
         <label>נושא: <strong>{{ $case->subject }}</strong></label>
         <label>סטטוס: <strong>{{ $case->status }}</strong></label>
         <label>דוא"ל: <strong>{{ $case->contact_email }}</strong></label>
